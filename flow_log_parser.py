@@ -111,9 +111,10 @@ def main():
         epilog="""
 Examples:
 python flow_log_parser.py                              # Run with default files
+python flow_log_parser.py -h                           # Show help
 python flow_log_parser.py -l custom_lookup.csv         # Use custom lookup file
 python flow_log_parser.py --log custom_flow.txt        # Use custom log file
-python flow_log_parser.py -v                           # Run with verbose output
+python flow_log_parser.py -V                           # Run with verbose output
 """,
     )
 
