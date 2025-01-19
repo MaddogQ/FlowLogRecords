@@ -49,7 +49,8 @@ The following test cases are included:
 ## Analysis
 
 Overall Time Complexity: O(n+m), where n is the size of the lookup table, and m is the size of the flow log.
-Overall Space Complexity: O(n+k), where n is the size of the lookup table, and k is the number of the unique tags and port/protocol combinations.
+
+Overall Space Complexity: O(n), where n is the size of the lookup table. (Both ignoring the the number of unique tags and port/protocol combinations)
 
 ---
 
