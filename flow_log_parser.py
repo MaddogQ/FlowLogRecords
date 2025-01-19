@@ -1,7 +1,7 @@
 import argparse
 import csv
 import os
-from collections import Counter, defaultdict
+from collections import Counter
 
 # Ref: https://www.iana.org/assignments/protocol-numbers/protocol-numbers.xhtml
 PROTOCOL_MAP = {
@@ -79,20 +79,20 @@ def parse_flow_logs(log_file, lookup, verbose=False):
 
 
 # Function to write output files
-def write_output_files(tag_counts, port_protocol_counts):
+def write_output_file(output_file, tag_counts, port_protocol_counts, reverse=False):
     try:
-        # Sort the results for better readability
-        sorted_tags = dict(sorted(tag_counts.items()))
-        sorted_ports = dict(sorted(port_protocol_counts.items()))
+        # Sort the results for better readability, reverse=True for descending order
+        sorted_tags = dict(sorted(tag_counts.items(), reverse=reverse))
+        sorted_ports = dict(sorted(port_protocol_counts.items(), reverse=reverse))
 
-        with open("tag_counts.csv", "w", newline="") as tag_file:
+        with open(output_file, "w", newline="") as tag_file:
             writer = csv.writer(tag_file)
+            writer.writerow(["Tag Counts:"])
             writer.writerow(["Tag", "Count"])
             for tag, count in sorted_tags.items():
                 writer.writerow([tag, count])
-
-        with open("port_protocol_counts.csv", "w", newline="") as port_file:
-            writer = csv.writer(port_file)
+            writer.writerow([])
+            writer.writerow(["Port/Protocol Combination Counts:"])
             writer.writerow(["Port", "Protocol", "Count"])
             for (port, protocol), count in sorted_ports.items():
                 writer.writerow([port, protocol, count])
@@ -114,6 +114,8 @@ python flow_log_parser.py                              # Run with default files
 python flow_log_parser.py -h                           # Show help
 python flow_log_parser.py -l custom_lookup.csv         # Use custom lookup file
 python flow_log_parser.py --log custom_flow.txt        # Use custom log file
+python flow_log_parser.py -o custom_output.csv         # Use custom output file
+python flow_log_parser.py -r                           # Sort in descending order
 python flow_log_parser.py -V                           # Run with verbose output
 """,
     )
@@ -131,6 +133,18 @@ python flow_log_parser.py -V                           # Run with verbose output
         "--log",
         default="flow_log.txt",
         help="Path to the flow log file (default: flow_log.txt)",
+    )
+    input_group.add_argument(
+        "-o",
+        "--output",
+        default="log_stats.csv",
+        help="Path to the output file (default: log_stats.csv)",
+    )
+    input_group.add_argument(
+        "-r",
+        "--reverse",
+        action="store_true",
+        help="Sort in descending order (default: ascending)",
     )
 
     # Optional arguments
@@ -165,16 +179,14 @@ python flow_log_parser.py -V                           # Run with verbose output
         print(tag_counts)
         print(port_protocol_counts)
 
-    write_output_files(tag_counts, port_protocol_counts)
+    write_output_file(args.output, tag_counts, port_protocol_counts, args.reverse)
 
     if args.verbose:
         print("\nProcessing statistics:")
         print(f"Total tags processed: {sum(tag_counts.values())}")
         print(f"Unique port/protocol combinations: {len(port_protocol_counts)}")
 
-    print(
-        "Processing complete. Outputs saved as tag_counts.csv and port_protocol_counts.csv"
-    )
+    print("Processing complete. Outputs saved as log_stats.csv")
 
 
 if __name__ == "__main__":
