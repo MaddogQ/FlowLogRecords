@@ -14,8 +14,16 @@ PROTOCOL_MAP = {
 NUM_FIELDS = 14  # Number of fields in the flow log file
 
 
-# Function to load lookup table
 def load_lookup_table(lookup_file):
+    """Loads the lookup table from the given file.
+
+    Args:
+        lookup_file (str): The path to the lookup table file.
+
+    Returns:
+        dict: A dictionary with port/protocol combinations as keys and tags as
+        values.
+    """
     lookup = {}
     try:
         with open(lookup_file, "r") as file:
@@ -27,11 +35,24 @@ def load_lookup_table(lookup_file):
                     lookup[(port.strip(), protocol.strip())] = tag.strip()
     except Exception as e:
         print(f"Error reading lookup file: {e}")
+        raise  # Error handling
     return lookup
 
 
-# Function to parse flow logs and map to tags
 def parse_flow_logs(log_file, lookup, verbose=False):
+    """Parses the flow logs and maps them to tags.
+
+    Args:
+        log_file (str): The path to the flow log file.
+        lookup (dict): A dictionary with port/protocol combinations as keys and
+        tags as values.
+        verbose (bool, optional): Whether to print verbose output. Defaults to
+        False.
+
+    Returns:
+        tuple: A tuple containing two dictionaries. 1st contains the tag counts,
+        and 2nd contains the port/protocol counts.
+    """
     tag_counts = Counter()
     port_protocol_counts = Counter()
     untagged_count = 0  # for exception handling
@@ -78,8 +99,17 @@ def parse_flow_logs(log_file, lookup, verbose=False):
     return tag_counts, port_protocol_counts
 
 
-# Function to write output files
 def write_output_file(output_file, tag_counts, port_protocol_counts, reverse=False):
+    """Writes the output files.
+
+    Args:
+        output_file (str): The path to the output file.
+        tag_counts (dict): A dictionary with tags as keys and counts as values.
+        port_protocol_counts (dict): A dictionary with port/protocol
+        combinations as keys and counts as values.
+        reverse (bool, optional): Whether to sort in descending order. Defaults
+        to False.
+    """
     try:
         # Sort the results for better readability, reverse=True for descending order
         sorted_tags = dict(sorted(tag_counts.items(), reverse=reverse))
