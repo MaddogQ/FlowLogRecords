@@ -14,11 +14,13 @@ PROTOCOL_MAP = {
 NUM_FIELDS = 14  # Number of fields in the flow log file
 
 
-def load_lookup_table(lookup_file):
+def load_lookup_table(lookup_file, verbose=False):
     """Loads the lookup table from the given file.
 
     Args:
         lookup_file (str): The path to the lookup table file.
+        verbose (bool, optional): Whether to print verbose output. Defaults to
+        False.
 
     Returns:
         dict: A dictionary with port/protocol combinations as keys and tags as
@@ -29,10 +31,14 @@ def load_lookup_table(lookup_file):
         with open(lookup_file, "r") as file:
             reader = csv.reader(file)
             next(reader)  # Skip header
-            for row in reader:
+            for line_number, row in enumerate(reader, 1):
                 if len(row) == 3:
                     port, protocol, tag = row
                     lookup[(port.strip(), protocol.strip())] = tag.strip()
+                elif verbose:
+                    print(
+                        f"Warning: Malformed lookup data at line {line_number}. Skipping..."
+                    )
     except Exception as e:
         print(f"Error reading lookup file: {e}")
         raise  # Error handling
@@ -66,9 +72,10 @@ def parse_flow_logs(log_file, lookup, verbose=False):
                     continue
 
                 if len(parts) < NUM_FIELDS:
-                    print(
-                        f"Warning: Malformed data at line {line_number}"
-                    )  # Add warning for malformed data
+                    if verbose:
+                        print(
+                            f"Warning: Malformed log data at line {line_number}. Skipping..."
+                        )  # Add warning for malformed data
                     continue
 
                 # Get port and protocol
@@ -205,7 +212,7 @@ python flow_log_parser.py -V                           # Run with verbose output
         print(f"Processing log file: {args.log}")
         print()
 
-    lookup = load_lookup_table(args.lookup)
+    lookup = load_lookup_table(args.lookup, args.verbose)
     tag_counts, port_protocol_counts = parse_flow_logs(args.log, lookup, args.verbose)
 
     if args.verbose:
