@@ -73,8 +73,11 @@ def parse_flow_logs(log_file, lookup, verbose=False):
 
                 # Get port and protocol
                 dstport, protocol = parts[6].strip(), parts[7].strip()
-                # Convert protocol to actual protocol name
-                protocol = PROTOCOL_MAP.get(int(protocol), "Unknown")
+                try:
+                    # Convert protocol to actual protocol name
+                    protocol = PROTOCOL_MAP.get(int(protocol), "Unknown")
+                except ValueError:  # In case of malformed protocol number
+                    protocol = "Unknown"
 
                 key = (dstport, protocol)
 
